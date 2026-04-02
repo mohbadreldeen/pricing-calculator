@@ -434,3 +434,6 @@ document.addEventListener("keydown", (e) => {
     if (e.key === "Escape")
         window.dispatchEvent(new CustomEvent("close-modals"));
 });
+
+import Alpine from 'alpinejs';
+Alpine.start();
