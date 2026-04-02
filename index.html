@@ -1,0 +1,897 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Price Calculator</title>
+        <script
+            defer
+            src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+        ></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="styles.css" />
+    </head>
+    <body>
+        <div x-data="priceCalculator()" class="app">
+            <!-- ── Header ── -->
+            <header class="header">
+                <h1 class="title">Price Calculator</h1>
+                <button class="btn-chat-sales">Chat to Sales</button>
+            </header>
+
+            <!-- ── Main Two-Column Grid ── -->
+            <div class="main-grid">
+                <!-- LEFT COLUMN -->
+                <div class="left-col">
+                    <!-- ── Slider ── -->
+                    <section class="slider-section">
+                        <h2 class="section-label">Number of Exhibitors</h2>
+                        <div class="slider-wrapper">
+                            <div class="slider-labels">
+                                <span>100</span>
+
+                                <span>2500+</span>
+                            </div>
+                            <div class="slider-container">
+                                <div class="slider-track-bg"></div>
+                                <div
+                                    class="slider-fill"
+                                    :style="`width:${sliderProgress}%`"
+                                ></div>
+                                <input
+                                    type="range"
+                                    class="slider-input"
+                                    min="100"
+                                    max="2600"
+                                    step="10"
+                                    x-model="exhibitors"
+                                    @input="updateSlider($event)"
+                                />
+                                <div
+                                    class="slider-thumb"
+                                    :style="`left:${tooltipLeft}%`"
+                                ></div>
+                                <div
+                                    class="slider-tooltip"
+                                    :style="`left:${tooltipLeft}%`"
+                                >
+                                    <span
+                                        x-text="exhibitors >= 2500 ? '2500+' : exhibitors"
+                                    ></span>
+                                    <div class="tooltip-arrow"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <!-- Compare table: plan cards + feature rows -->
+                    <div
+                        class="compare-collapse"
+                        :class="{'compare-collapse--expanded': compareExpanded}"
+                    >
+                        <div class="compare-wrapper">
+                            <!-- Compare header (plan cards) -->
+                            <div class="compare-head">
+                                <!-- Label cell -->
+                                <div class="compare-label-cell map-type-label">
+                                    <h3 class="map-type-title">Map Type</h3>
+                                </div>
+
+                                <!-- Advanced plan -->
+                                <div
+                                    class="plan-col"
+                                    :class="{'plan-col--selected': selectedPlan === 'advanced'}"
+                                >
+                                    <div class="plan-card plan-card-advanced">
+                                        <div class="plan-card-top">
+                                            <div class="plan-info">
+                                                <span class="plan-name"
+                                                    >Advanced</span
+                                                >
+                                                <span class="plan-desc"
+                                                    >3D map with most advanced
+                                                    features.</span
+                                                >
+                                            </div>
+                                            <div
+                                                class="plan-price"
+                                                x-text="'$' + advancedPrice.toLocaleString()"
+                                            ></div>
+                                        </div>
+
+                                        <button
+                                            class="btn-plan"
+                                            :class="{'btn-plan--selected': selectedPlan==='advanced'}"
+                                            @click="selectPlan('advanced')"
+                                        >
+                                            <template
+                                                x-if="selectedPlan === 'advanced'"
+                                            >
+                                                <span class="btn-plan-inner">
+                                                    <svg
+                                                        width="13"
+                                                        height="10"
+                                                        viewBox="0 0 13 10"
+                                                        fill="none"
+                                                    >
+                                                        <path
+                                                            d="M1 5l3.5 3.5L12 1"
+                                                            stroke="white"
+                                                            stroke-width="2"
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                        />
+                                                    </svg>
+                                                    <span
+                                                        class="btn-plan-selected-text"
+                                                        >Selected</span
+                                                    >
+                                                    <span
+                                                        class="btn-plan-text-mobile"
+                                                        >Advanced</span
+                                                    >
+                                                </span>
+                                            </template>
+                                            <template
+                                                x-if="selectedPlan !== 'advanced'"
+                                            >
+                                                <span>
+                                                    <span class="btn-plan-text"
+                                                        >Select</span
+                                                    >
+                                                    <span
+                                                        class="btn-plan-text-mobile"
+                                                        >Advanced</span
+                                                    >
+                                                </span>
+                                            </template>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Standard plan -->
+                                <div
+                                    class="plan-col"
+                                    :class="{'plan-col--selected': selectedPlan === 'standard'}"
+                                >
+                                    <div class="plan-card plan-card-standard">
+                                        <div class="plan-card-top">
+                                            <div class="plan-info">
+                                                <span class="plan-name"
+                                                    >Standard</span
+                                                >
+                                                <span class="plan-desc"
+                                                    >2D map with basic
+                                                    features.</span
+                                                >
+                                            </div>
+                                            <div
+                                                class="plan-price"
+                                                x-text="'$' + standardPrice.toLocaleString()"
+                                            ></div>
+                                        </div>
+                                        <button
+                                            class="btn-plan"
+                                            :class="{'btn-plan--selected': selectedPlan==='standard'}"
+                                            @click="selectPlan('standard')"
+                                        >
+                                            <template
+                                                x-if="selectedPlan === 'standard'"
+                                            >
+                                                <span class="btn-plan-inner">
+                                                    <svg
+                                                        width="13"
+                                                        height="10"
+                                                        viewBox="0 0 13 10"
+                                                        fill="none"
+                                                    >
+                                                        <path
+                                                            d="M1 5l3.5 3.5L12 1"
+                                                            stroke="white"
+                                                            stroke-width="2"
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                        />
+                                                    </svg>
+                                                    <span
+                                                        class="btn-plan-selected-text"
+                                                        >Selected</span
+                                                    >
+                                                    <span
+                                                        class="btn-plan-text-mobile"
+                                                        >Standard</span
+                                                    >
+                                                </span>
+                                            </template>
+                                            <template
+                                                x-if="selectedPlan !== 'standard'"
+                                            >
+                                                <span>
+                                                    <span class="btn-plan-text"
+                                                        >Select</span
+                                                    >
+                                                    <span
+                                                        class="btn-plan-text-mobile"
+                                                        >Standard</span
+                                                    >
+                                                </span>
+                                            </template>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /compare-head -->
+
+                            <!-- Feature rows rendered from data -->
+                            <template
+                                x-for="(feat, i) in features"
+                                :key="feat.id"
+                            >
+                                <div
+                                    class="feat-row"
+                                    :class="[i % 2 === 1 ? 'feat-row--alt' : '', feat.id === 'live' ? 'feat-row--live' : '']"
+                                >
+                                    <!-- label -->
+                                    <div class="feat-label-cell">
+                                        <span
+                                            class="feat-name"
+                                            x-text="feat.name"
+                                        ></span>
+                                        <template x-if="feat.id !== 'live'">
+                                            <button
+                                                type="button"
+                                                class="feat-learn-more"
+                                                @click="openLearnMore()"
+                                            >
+                                                Learn More
+                                                <img
+                                                    src="assets/i-icon.svg"
+                                                    class="info-icon"
+                                                    alt="Info"
+                                                />
+                                            </button>
+                                        </template>
+                                    </div>
+                                    <!-- advanced value -->
+                                    <div
+                                        class="feat-val-cell"
+                                        :class="{'feat-val-cell--selected': selectedPlan==='advanced'}"
+                                    >
+                                        <template x-if="feat.id === 'live'">
+                                            <button
+                                                type="button"
+                                                class="plan-live-link"
+                                                @click="openLearnMore()"
+                                            >
+                                                See Live Example
+                                            </button>
+                                        </template>
+                                        <template
+                                            x-if="feat.id !== 'live' && feat.advanced === true"
+                                        >
+                                            <svg
+                                                class="check-circle"
+                                                viewBox="0 0 22 22"
+                                                fill="none"
+                                            >
+                                                <circle
+                                                    cx="11"
+                                                    cy="11"
+                                                    r="11"
+                                                    fill="#039855"
+                                                />
+                                                <path
+                                                    d="M6 11l3 3 6-6"
+                                                    stroke="white"
+                                                    stroke-width="2"
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                />
+                                            </svg>
+                                        </template>
+                                        <template
+                                            x-if="feat.advanced === false"
+                                        >
+                                            <span class="feat-dash">—</span>
+                                        </template>
+                                        <template
+                                            x-if="typeof feat.advanced === 'string'"
+                                        >
+                                            <span
+                                                class="feat-text-val"
+                                                x-text="feat.advanced"
+                                            ></span>
+                                        </template>
+                                    </div>
+                                    <!-- standard value -->
+                                    <div
+                                        class="feat-val-cell"
+                                        :class="{'feat-val-cell--selected': selectedPlan==='standard'}"
+                                    >
+                                        <template x-if="feat.id === 'live'">
+                                            <button
+                                                type="button"
+                                                class="plan-live-link"
+                                                @click="openLearnMore()"
+                                            >
+                                                See Live Example
+                                            </button>
+                                        </template>
+                                        <template
+                                            x-if="feat.id !== 'live' && feat.standard === true"
+                                        >
+                                            <svg
+                                                class="check-circle"
+                                                viewBox="0 0 22 22"
+                                                fill="none"
+                                            >
+                                                <circle
+                                                    cx="11"
+                                                    cy="11"
+                                                    r="11"
+                                                    fill="#039855"
+                                                />
+                                                <path
+                                                    d="M6 11l3 3 6-6"
+                                                    stroke="white"
+                                                    stroke-width="2"
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                />
+                                            </svg>
+                                        </template>
+                                        <template
+                                            x-if="feat.standard === false"
+                                        >
+                                            <span class="feat-dash">—</span>
+                                        </template>
+                                        <template
+                                            x-if="typeof feat.standard === 'string'"
+                                        >
+                                            <span
+                                                class="feat-text-val"
+                                                x-text="feat.standard"
+                                            ></span>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                        <!-- /compare-wrapper -->
+                    </div>
+                    <!-- /compare-collapse -->
+                    <button
+                        type="button"
+                        class="btn-full-comparison"
+                        @click="compareExpanded = !compareExpanded"
+                        x-text="compareExpanded ? 'Collapse' : 'Full Comparison'"
+                    ></button>
+
+                    <!-- CTA Banner -->
+                    <div class="cta-banner">
+                        <div class="cta-left">
+                            <div class="cta-avatar">
+                                <img src="assets/support.svg" />
+                            </div>
+                            <div>
+                                <p class="cta-title">
+                                    Confused or Need a custom solution?
+                                </p>
+                                <p class="cta-sub">Feel free to talk to us</p>
+                            </div>
+                        </div>
+                        <button class="btn-primary">Chat to Sales</button>
+                    </div>
+                </div>
+                <!-- /left-col -->
+
+                <!-- RIGHT COLUMN -->
+                <div class="right-col">
+                    <!-- Total Cost Card -->
+                    <div class="cost-card">
+                        <h3 class="cost-card-title">Total Cost</h3>
+                        <div class="cost-rows">
+                            <div class="cost-row">
+                                <span class="cost-label">
+                                    Map Type (<span
+                                        x-text="selectedPlan === 'advanced' ? 'Advanced' : 'Standard'"
+                                    ></span
+                                    >)
+                                    <img
+                                        src="assets/q-icon.svg"
+                                        class="help-icon"
+                                        alt="Help"
+                                    />
+                                </span>
+                                <span
+                                    class="cost-val"
+                                    x-text="'$' + mapTypePrice.toLocaleString()"
+                                ></span>
+                            </div>
+                            <div class="cost-row">
+                                <span class="cost-label">
+                                    Add-ons
+                                    <img
+                                        src="assets/q-icon.svg"
+                                        class="help-icon"
+                                        alt="Help"
+                                    />
+                                </span>
+                                <span
+                                    class="cost-val"
+                                    x-text="'$' + addonsTotal.toLocaleString()"
+                                ></span>
+                            </div>
+                            <div class="cost-row">
+                                <span class="cost-label">
+                                    Discounts
+                                    <img
+                                        src="assets/q-icon.svg"
+                                        class="help-icon"
+                                        alt="Help"
+                                    />
+                                </span>
+                                <span
+                                    class="cost-val cost-val--discount"
+                                    x-text="'-$' + discountTotal.toLocaleString()"
+                                ></span>
+                            </div>
+                        </div>
+                        <div class="cost-total-row">
+                            <span class="cost-total-label">Total</span>
+                            <span
+                                class="cost-total-val"
+                                x-text="'$' + totalCost.toLocaleString()"
+                            ></span>
+                        </div>
+                        <button class="btn-save-share" @click="openShare()">
+                            <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 18 18"
+                                fill="none"
+                            >
+                                <path
+                                    d="M9 1.5V11.25M9 1.5L12 4.5M9 1.5L6 4.5M3 9v6a1.5 1.5 0 001.5 1.5h9A1.5 1.5 0 0015 15V9"
+                                    stroke="currentColor"
+                                    stroke-width="1.6"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                            </svg>
+                            Save &amp; Share
+                        </button>
+                    </div>
+
+                    <!-- Add-ons Card -->
+                    <h3 class="right-card-title">Choose Add-ons</h3>
+                    <div class="right-card">
+                        <div class="addons-list">
+                            <template x-for="addon in addons" :key="addon.id">
+                                <label class="addon-row">
+                                    <span class="cb-wrap">
+                                        <input
+                                            type="checkbox"
+                                            class="cb-input"
+                                            x-model="addon.selected"
+                                        />
+                                        <span class="cb-custom"></span>
+                                    </span>
+                                    <span class="addon-text">
+                                        <span
+                                            class="addon-name"
+                                            x-text="addon.name"
+                                        ></span>
+                                        <button
+                                            type="button"
+                                            class="feat-learn-more"
+                                            @click="openLearnMore()"
+                                        >
+                                            Learn More
+                                            <img
+                                                src="assets/i-icon.svg"
+                                                class="info-icon"
+                                                alt="Info"
+                                            />
+                                        </button>
+                                    </span>
+                                    <span class="addon-price-wrap">
+                                        <span
+                                            class="addon-price"
+                                            :class="{'addon-price--strike': addon.isFree}"
+                                            x-text="'$' + addon.price.toLocaleString()"
+                                        ></span>
+                                        <template x-if="addon.isFree">
+                                            <span class="addon-free"
+                                                ><b>FREE</b> for Client 2026
+                                                Shows</span
+                                            >
+                                        </template>
+                                    </span>
+                                </label>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="right-card">
+                        <!-- 3D Features counter row -->
+                        <div class="features-3d-row">
+                            <span class="features-3d-text">
+                                <span class="addon-name"
+                                    >Additional 3D Features</span
+                                >
+                                <div class="features-3d-price-container">
+                                    <span class="features-3d-price"
+                                        >$800/Feature</span
+                                    >
+                                    <button
+                                        type="button"
+                                        class="feat-learn-more"
+                                        @click="openLearnMore()"
+                                    >
+                                        Learn More
+                                        <img
+                                            src="assets/i-icon.svg"
+                                            class="info-icon"
+                                            alt="Info"
+                                        />
+                                    </button>
+                                </div>
+                            </span>
+                            <div class="counter">
+                                <button
+                                    class="counter-btn"
+                                    @click="decrementFeatures()"
+                                >
+                                    <svg
+                                        width="14"
+                                        height="2"
+                                        viewBox="0 0 14 2"
+                                        fill="none"
+                                    >
+                                        <path
+                                            d="M1 1h12"
+                                            stroke="#344054"
+                                            stroke-width="2"
+                                            stroke-linecap="round"
+                                        />
+                                    </svg>
+                                </button>
+                                <span
+                                    class="counter-val"
+                                    x-text="additionalFeatures"
+                                ></span>
+                                <button
+                                    class="counter-btn"
+                                    @click="incrementFeatures()"
+                                >
+                                    <svg
+                                        width="14"
+                                        height="14"
+                                        viewBox="0 0 14 14"
+                                        fill="none"
+                                    >
+                                        <path
+                                            d="M7 1v12M1 7h12"
+                                            stroke="#344054"
+                                            stroke-width="2"
+                                            stroke-linecap="round"
+                                        />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Discounts -->
+                    <h3 class="right-card-title">
+                        Choose Applicable Discounts
+                    </h3>
+                    <div class="right-card">
+                        <div class="discount-row">
+                            <span class="discount-text">
+                                <span class="discount-name"
+                                    >B2C First show discount</span
+                                >
+                                <button
+                                    type="button"
+                                    class="feat-learn-more"
+                                    @click="openLearnMore()"
+                                >
+                                    Learn More
+                                    <img
+                                        src="assets/i-icon.svg"
+                                        class="info-icon"
+                                        alt="Info"
+                                    />
+                                </button>
+                            </span>
+                            <span class="discount-pct">20%</span>
+                        </div>
+                        <div class="discount-row discount-row--active">
+                            <span class="discount-text">
+                                <span class="discount-name"
+                                    >Emerging Market Discount</span
+                                >
+                                <button
+                                    type="button"
+                                    class="feat-learn-more"
+                                    @click="openLearnMore()"
+                                >
+                                    Learn More
+                                    <img
+                                        src="assets/i-icon.svg"
+                                        class="info-icon"
+                                        alt="Info"
+                                    />
+                                </button>
+                            </span>
+                            <span
+                                class="discount-badge"
+                                x-text="(selectedCountry ? selectedCountry.discount : 15) + '% Discounted'"
+                            ></span>
+                        </div>
+                        <div class="country-selector">
+                            <p class="country-hint">
+                                Select event's country to see if eligible for a
+                                discount
+                            </p>
+                            <button
+                                type="button"
+                                class="country-btn"
+                                x-ref="countryBtn"
+                                @click="toggleCountryDropdown()"
+                            >
+                                <template
+                                    x-if="selectedCountry && getCountryFlagSrc(selectedCountry)"
+                                >
+                                    <img
+                                        :src="getCountryFlagSrc(selectedCountry)"
+                                        :alt="selectedCountry.name + ' flag'"
+                                        class="ci-flag-img"
+                                    />
+                                </template>
+                                <template
+                                    x-if="!selectedCountry || !getCountryFlagSrc(selectedCountry)"
+                                >
+                                    <span
+                                        class="country-flag-txt ci-flag"
+                                        x-text="selectedCountry ? selectedCountry.flag : '🌍'"
+                                    ></span>
+                                </template>
+                                <span
+                                    class="country-name-txt"
+                                    x-text="selectedCountry ? selectedCountry.name : 'Select country'"
+                                ></span>
+                                <svg
+                                    width="12"
+                                    height="7"
+                                    viewBox="0 0 12 7"
+                                    fill="none"
+                                >
+                                    <path
+                                        d="M1 1l5 5 5-5"
+                                        stroke="#737580"
+                                        stroke-width="1.5"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    />
+                                </svg>
+                            </button>
+                            <div
+                                class="country-dropdown"
+                                x-ref="countryDropdown"
+                                :class="{'country-dropdown--up': countryDropdownDirection === 'up'}"
+                                x-show="showCountryDropdown"
+                                x-transition.origin.top.left
+                                @click.outside="closeCountryDropdown()"
+                                style="display: none"
+                            >
+                                <div
+                                    class="modal-search country-dropdown-search"
+                                >
+                                    <svg
+                                        width="16"
+                                        height="16"
+                                        viewBox="0 0 16 16"
+                                        fill="none"
+                                    >
+                                        <circle
+                                            cx="6.5"
+                                            cy="6.5"
+                                            r="5.5"
+                                            stroke="#667085"
+                                            stroke-width="1.3"
+                                        />
+                                        <path
+                                            d="M10.5 10.5l3.5 3.5"
+                                            stroke="#667085"
+                                            stroke-width="1.3"
+                                            stroke-linecap="round"
+                                        />
+                                    </svg>
+                                    <input
+                                        type="text"
+                                        class="search-input"
+                                        x-model="countrySearch"
+                                        placeholder="Search countries"
+                                    />
+                                </div>
+                                <div
+                                    class="country-list country-list--dropdown"
+                                >
+                                    <template
+                                        x-for="country in filteredCountries"
+                                        :key="country.name"
+                                    >
+                                        <button
+                                            type="button"
+                                            class="country-item"
+                                            @click="selectCountry(country)"
+                                            :class="{'country-item--active': selectedCountry && selectedCountry.name === country.name}"
+                                        >
+                                            <span class="ci-left">
+                                                <template
+                                                    x-if="getCountryFlagSrc(country)"
+                                                >
+                                                    <img
+                                                        :src="getCountryFlagSrc(country)"
+                                                        :alt="country.name + ' flag'"
+                                                        class="ci-flag-img"
+                                                    />
+                                                </template>
+                                                <template
+                                                    x-if="!getCountryFlagSrc(country)"
+                                                >
+                                                    <span
+                                                        class="ci-flag"
+                                                        x-text="country.flag"
+                                                    ></span>
+                                                </template>
+                                                <span
+                                                    x-text="country.name"
+                                                ></span>
+                                            </span>
+                                            <span
+                                                class="ci-pct"
+                                                x-text="country.discount + '%' "
+                                            ></span>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /right-col -->
+            </div>
+            <!-- /main-grid -->
+
+            <!-- ── Modals ── -->
+
+            <!-- Learn More Modal -->
+            <div
+                class="modal-overlay"
+                x-show="showLearnMore"
+                x-transition.opacity
+                @click.self="showLearnMore = false"
+                style="display: none"
+            >
+                <div class="modal-box modal-box--lg">
+                    <button
+                        class="modal-close"
+                        @click="showLearnMore = false"
+                        aria-label="Close"
+                    >
+                        <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                        >
+                            <path
+                                d="M18 6L6 18M6 6l12 12"
+                                stroke="#667085"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                            />
+                        </svg>
+                    </button>
+                    <h2 class="modal-title">Custom 3D Stages &amp; Features</h2>
+                    <div class="modal-body">
+                        <img
+                            src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=350&fit=crop"
+                            class="modal-img"
+                            alt="3D Visualization"
+                        />
+                        <h3 class="modal-sub">
+                            Your Vision, Dimensionally Rendered
+                        </h3>
+                        <p class="modal-p">
+                            Transform standard layouts into immersive,
+                            high-fidelity environments. From bespoke
+                            architectural structures to intricate branded
+                            elements, our design team builds custom 3D assets
+                            tailored specifically to your project's narrative.
+                        </p>
+                        <h4 class="modal-sub2">
+                            Precision Engineering for Every Pixel
+                        </h4>
+                        <ul class="modal-list">
+                            <li>
+                                <strong>Advanced Interactive Maps:</strong>
+                                Features that go beyond basic 3D layouts.
+                            </li>
+                            <li>
+                                <strong>Dynamic Functionality:</strong> Custom
+                                lighting, hotspots, and animations.
+                            </li>
+                            <li>
+                                <strong>Technical Excellence:</strong> Expert
+                                texture mapping and spatial logic.
+                            </li>
+                            <li>
+                                <strong>Story-Driven Design:</strong> We handle
+                                the tech; you lead the narrative.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save & Share Modal -->
+            <div
+                class="modal-overlay"
+                x-show="showShare"
+                x-transition.opacity
+                @click.self="showShare = false"
+                style="display: none"
+            >
+                <div class="modal-box">
+                    <button
+                        class="modal-close"
+                        @click="showShare = false"
+                        aria-label="Close"
+                    >
+                        <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                        >
+                            <path
+                                d="M18 6L6 18M6 6l12 12"
+                                stroke="#667085"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                            />
+                        </svg>
+                    </button>
+                    <h2 class="modal-title">
+                        Your selected choices can be accessed from this link:
+                    </h2>
+                    <div class="share-row">
+                        <input
+                            type="text"
+                            class="share-input"
+                            :value="shareLink"
+                            readonly
+                            @click="$event.target.select()"
+                        />
+                        <button class="btn-copy" @click="copyLink()">
+                            <span x-text="copied ? 'Copied!' : 'Copy'"></span>
+                        </button>
+                    </div>
+                    <p class="share-hint">
+                        Use this link to share the current quote with your team.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <!-- /app -->
+        <script src="script.js"></script>
+    </body>
+</html>
